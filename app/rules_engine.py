@@ -23,11 +23,25 @@ class RuleSet:
     rules: List[RuleCondition]
     actions: List[Dict[str, Any]]
 
-def load_rules(path: str) -> RuleSet:
+def load_rules(path: str) -> List[RuleSet]:
+    """Load one or more RuleSets from JSON."""
+    import json
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    rules = [RuleCondition(**r) for r in data.get("rules", [])]
-    return RuleSet(predicate=data.get("predicate", "All"), rules=rules, actions=data.get("actions", []))
+
+    # If top-level is a dict → wrap into list for backward compatibility
+    if isinstance(data, dict):
+        data = [data]
+
+    rulesets = []
+    for rs in data:
+        rules = [RuleCondition(**r) for r in rs.get("rules", [])]
+        rulesets.append(RuleSet(
+            predicate=rs.get("predicate", "All"),
+            rules=rules,
+            actions=rs.get("actions", [])
+        ))
+    return rulesets
 
 def _field_value(email: Email, field: str) -> Any:
     f = field.lower()

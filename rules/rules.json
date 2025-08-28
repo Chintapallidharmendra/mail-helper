@@ -1,12 +1,22 @@
-{
-  "predicate": "All",
-  "rules": [
-    { "field": "From", "predicate": "Contains", "value": "noreply@" },
-    { "field": "Subject", "predicate": "DoesNotContain", "value": "Promotion" },
-    { "field": "Received", "predicate": "LessThanDays", "value": 30 }
-  ],
-  "actions": [
-    { "type": "mark_as_read" },
-    { "type": "move_message", "label": "IMPORTANT" }
-  ]
-}
+[
+  {
+    "predicate": "All",
+    "rules": [
+      { "field": "From", "predicate": "Contains", "value": "noreply@" },
+      { "field": "Subject", "predicate": "DoesNotContain", "value": "Promotion" }
+    ],
+    "actions": [
+      { "type": "mark_as_read" }
+    ]
+  },
+  {
+    "predicate": "Any",
+    "rules": [
+      { "field": "Subject", "predicate": "Contains", "value": "URGENT" },
+      { "field": "Message", "predicate": "Contains", "value": "ASAP" }
+    ],
+    "actions": [
+      { "type": "move_message", "label": "Important" }
+    ]
+  }
+]

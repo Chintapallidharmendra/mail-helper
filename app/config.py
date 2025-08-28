@@ -10,5 +10,6 @@ class Settings(BaseModel):
     GMAIL_TOKEN_PATH: str = os.getenv("GMAIL_TOKEN_PATH", "./token.json")
     GMAIL_USER_ID: str = os.getenv("GMAIL_USER_ID", "me")
     DEFAULT_MOVE_LABEL: str = os.getenv("DEFAULT_MOVE_LABEL", "Processed")
+    STOP_AFTER_FIRST_MATCH: bool = os.getenv("STOP_AFTER_FIRST_MATCH", "true").lower() == "true"
 
 settings = Settings()

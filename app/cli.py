@@ -1,6 +1,7 @@
 import typer
 from .fetch_emails import init_db as initialize_db, fetch_and_store
 from .process_rules import process_rules
+from .rules_engine import load_rules
 from .gmail_client import get_credentials
 
 app = typer.Typer(help="Gmail Rules App CLI")
@@ -23,9 +24,17 @@ def fetch(max_results: int = typer.Option(50, help="How many emails to fetch fro
     typer.echo(f"Fetched {count} message metadata.")
 
 @app.command()
-def process(rules_path: str = typer.Option("rules/rules.json", help="Path to rules JSON")):
-    matched = process_rules(rules_path)
+def process(
+    rules_path: str = typer.Option("rules/rules.json", help="Path to rules JSON"),
+    stop_after_first_match: bool = typer.Option(
+        None, "--stop-after-first-match/--allow-multiple", help="Stop after first matching rule (default: from .env)"
+    ),
+):
+    rulesets = load_rules(rules_path)
+    typer.echo(f"Loaded {len(rulesets)} rulesets from {rules_path}")
+    matched = process_rules(rulesets, stop_after_first_match=stop_after_first_match)
     typer.echo(f"Applied rules to {matched} matching emails.")
+
 
 if __name__ == "__main__":
     app()
