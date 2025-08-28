@@ -1,0 +1,12 @@
+{
+  "predicate": "All",
+  "rules": [
+    { "field": "From", "predicate": "Contains", "value": "noreply@" },
+    { "field": "Subject", "predicate": "DoesNotContain", "value": "Promotion" },
+    { "field": "Received", "predicate": "LessThanDays", "value": 30 }
+  ],
+  "actions": [
+    { "type": "mark_as_read" },
+    { "type": "move_message", "label": "IMPORTANT" }
+  ]
+}
