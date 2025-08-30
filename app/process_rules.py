@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from .db import get_session
+from . import db
 from .models import Email
 from .rules_engine import email_matches, apply_actions
 from .rules_engine import RuleSet
@@ -7,7 +7,7 @@ from typing import List
 from .config import settings
 
 def process_rules(rulesets: List[RuleSet], stop_after_first_match: bool | None = None):
-    session = get_session()
+    session = db.get_session()
     try:
         emails = session.scalars(select(Email)).all()
         matched = 0

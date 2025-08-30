@@ -3,11 +3,13 @@
     "predicate": "All",
     "rules": [
       { "field": "From", "predicate": "Contains", "value": "noreply@" },
-      { "field": "Subject", "predicate": "DoesNotContain", "value": "Promotion" }
+      {
+        "field": "Subject",
+        "predicate": "DoesNotContain",
+        "value": "Promotion"
+      }
     ],
-    "actions": [
-      { "type": "mark_as_read" }
-    ]
+    "actions": [{ "type": "mark_as_read" }]
   },
   {
     "predicate": "Any",
@@ -15,8 +17,6 @@
       { "field": "Subject", "predicate": "Contains", "value": "URGENT" },
       { "field": "Message", "predicate": "Contains", "value": "ASAP" }
     ],
-    "actions": [
-      { "type": "move_message", "label": "Important" }
-    ]
+    "actions": [{ "type": "move_message", "label": "Important" }]
   }
 ]
