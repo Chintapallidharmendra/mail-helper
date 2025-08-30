@@ -195,3 +195,52 @@ def test_move_message_action(tmp_path, fake_session):
     assert matched == 1
     # Labels should now include "lbl_important" (from mocked ensure_label)
     assert "lbl_important" in updated.labels["ids"]
+
+
+def test_read_message_action_with_filters(tmp_path, fake_session):
+    """Verify read message action with day fitlers"""
+    rules_file = tmp_path / "rules.json"
+    rules_file.write_text(
+        """
+    [
+      {
+        "predicate": "All",
+        "rules": [{ "field": "from", "predicate": "Contains", "value": "@medium.com" },{ "field": "received", "predicate": "GreaterThanDays", "value": "2" }, { "field": "received", "predicate": "LessThanDays", "value": "10" }],
+        "actions": [{ "type": "mark_as_read"}]
+      }
+    ]
+    """
+    )
+
+    e = make_email(
+        id="msg4",
+        subject="Project updates made easy",
+        sender="promotion@medium.com",
+        received=datetime.utcnow() - timedelta(days=10),
+    )
+    e2 = make_email(
+        id="msg5",
+        subject="Django made easy",
+        sender="promotion@medium.com",
+        received=datetime.utcnow() - timedelta(days=3),
+    )
+    e3 = make_email(
+        id="msg6",
+        subject="Python made easy",
+        sender="promotion@medium.com",
+        received=datetime.utcnow() - timedelta(days=2),
+    )
+    fake_session.add(e)
+    fake_session.add(e2)
+    fake_session.add(e3)
+
+    rulesets = load_rules(str(rules_file))
+    matched = process_rules(rulesets, stop_after_first_match=True)
+    updated = fake_session.get(Email, "msg4")
+    updated2 = fake_session.get(Email, "msg5")
+    updated3 = fake_session.get(Email, "msg6")
+
+    assert matched == 1
+    assert updated.is_read is False
+    assert updated2.is_read is True
+    assert updated3.is_read is False

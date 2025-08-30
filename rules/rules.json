@@ -18,5 +18,17 @@
       { "field": "Message", "predicate": "Contains", "value": "ASAP" }
     ],
     "actions": [{ "type": "move_message", "label": "Important" }]
+  },
+  {
+    "predicate": "All",
+    "rules": [
+      { "field": "Received", "predicate": "GreaterThanDays", "value": "2" },
+      { "field": "from", "predicate": "Contains", "value": "@medium" }
+    ],
+    "actions": [
+      {
+        "type": "mark_as_read"
+      }
+    ]
   }
 ]
