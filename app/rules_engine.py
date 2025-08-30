@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import List, Dict, Any, Callable
+from typing import List, Dict, Any
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import json
@@ -9,7 +9,13 @@ from .config import settings
 from .gmail_client import ensure_label, modify_message, get_labels_map
 
 STRING_PREDICATES = {"Contains", "DoesNotContain", "Equals", "DoesNotEqual"}
-DATE_PREDICATES = {"LessThanDays", "GreaterThanDays", "LessThanMonths", "GreaterThanMonths"}
+DATE_PREDICATES = {
+    "LessThanDays",
+    "GreaterThanDays",
+    "LessThanMonths",
+    "GreaterThanMonths",
+}
+
 
 @dataclass
 class RuleCondition:
@@ -17,15 +23,17 @@ class RuleCondition:
     predicate: str
     value: Any
 
+
 @dataclass
 class RuleSet:
-    predicate: str # "All" or "Any"
+    predicate: str  # "All" or "Any"
     rules: List[RuleCondition]
     actions: List[Dict[str, Any]]
 
+
 def load_rules(path: str) -> List[RuleSet]:
     """Load one or more RuleSets from JSON."""
-    import json
+
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -36,12 +44,15 @@ def load_rules(path: str) -> List[RuleSet]:
     rulesets = []
     for rs in data:
         rules = [RuleCondition(**r) for r in rs.get("rules", [])]
-        rulesets.append(RuleSet(
-            predicate=rs.get("predicate", "All"),
-            rules=rules,
-            actions=rs.get("actions", [])
-        ))
+        rulesets.append(
+            RuleSet(
+                predicate=rs.get("predicate", "All"),
+                rules=rules,
+                actions=rs.get("actions", []),
+            )
+        )
     return rulesets
+
 
 def _field_value(email: Email, field: str) -> Any:
     f = field.lower()
@@ -57,6 +68,7 @@ def _field_value(email: Email, field: str) -> Any:
         return email.received_at
     raise ValueError(f"Unsupported field: {field}")
 
+
 def _match_string(val: str, predicate: str, target: str) -> bool:
     v = (val or "").lower()
     t = (target or "").lower()
@@ -70,6 +82,7 @@ def _match_string(val: str, predicate: str, target: str) -> bool:
         return v != t
     raise ValueError(f"Unknown string predicate {predicate}")
 
+
 def _match_date(dt: datetime, predicate: str, amount: int) -> bool:
     now = datetime.utcnow()
     if predicate == "LessThanDays":
@@ -82,6 +95,7 @@ def _match_date(dt: datetime, predicate: str, amount: int) -> bool:
     if predicate == "GreaterThanMonths":
         return (now - relativedelta(months=int(amount))) > dt
     raise ValueError(f"Unknown date predicate {predicate}")
+
 
 def email_matches(email: Email, rs: RuleSet) -> bool:
     results = []
@@ -97,6 +111,7 @@ def email_matches(email: Email, rs: RuleSet) -> bool:
         else:
             results.append(False)
     return all(results) if rs.predicate == "All" else any(results)
+
 
 def apply_actions(email: Email, actions: List[Dict[str, Any]]) -> Dict[str, Any]:
     labels_map = get_labels_map()
@@ -125,7 +140,9 @@ def apply_actions(email: Email, actions: List[Dict[str, Any]]) -> Dict[str, Any]
             raise ValueError(f"Unknown action type: {t}")
 
     if add_ids or remove_ids:
-        modify_message(email.id, add_labels=list(set(add_ids)), remove_labels=list(set(remove_ids)))
+        modify_message(
+            email.id, add_labels=list(set(add_ids)), remove_labels=list(set(remove_ids))
+        )
         # update labels list in our local model (id-only to keep it simple)
         current_ids = set((email.labels or {}).get("ids", []))
         current_ids.update(add_ids)
